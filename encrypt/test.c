@@ -35,21 +35,25 @@ int main(int argc, char* argv[])
   unsigned char* iv;
   unsigned char* aead;
 
+  unsigned char* ad;
+
   input = get_random_bytes(1024);
   key = get_random_bytes(256/8);
   iv = get_random_bytes(96/8);
+
+  ad = get_random_bytes(69);
 
   output = (unsigned char*) malloc(1024);
   output2 = (unsigned char*) malloc(1024);
   aead = (unsigned char*) malloc(16);
 
   printf("Encrypting...\n");
-  int rc = encrypt(input, 1024, key, iv, output, aead);
+  int rc = encrypt(input, 1024, key, iv, ad, 69, output, aead);
   if(rc < 0) return rc;
   printf("Encrypted bytes: %d\n", rc);
-  
+
   printf("Decrypting...\n");
-  rc = decrypt(output, 1024, key, iv, output2, aead);
+  rc = decrypt(output, 1024, key, iv, ad, 69, output2, aead);
   if(rc < 0) return rc;
 
   printf("Decrypted bytes: %d. Veryfing... ", rc);
@@ -64,6 +68,7 @@ int main(int argc, char* argv[])
   free(key);
   free(iv);
   free(aead);
+  free(ad);
 
   return 0;
 }

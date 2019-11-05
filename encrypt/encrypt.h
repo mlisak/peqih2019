@@ -20,7 +20,12 @@
  * key - buffer containing key bytes (32 bytes)
  * iv - buffer containing iv bytes (12 bytes)
  * out - output buffer
- * aead - output buffer for AEAD tag (16 bytes)
+ * ad - associated data buffer
+ * ad_len - associated data length
+ * aead_tag - output buffer for AEAD tag (16 bytes)
+ *
+ * If not using any associated data, set ad to NULL and
+ * ad_len to 0.
  *
  * All the buffers should be managed (allocated and freed)
  * by the caller.
@@ -31,9 +36,11 @@
 
 int encrypt(const unsigned char* in, const int in_len,
             const unsigned char* key, const unsigned char* iv,
-            unsigned char* out, unsigned char* aead);
+            const unsigned char* ad, const int ad_len,
+            unsigned char* out, unsigned char* aead_tag);
 
 int decrypt(const unsigned char* in, const int in_len,
             const unsigned char* key, const unsigned char* iv,
-            unsigned char* out, unsigned char* aead); 
+            const unsigned char* ad, const int ad_len,
+            unsigned char* out, unsigned char* aead_tag);
 
