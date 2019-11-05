@@ -42,12 +42,12 @@ def main():
         print("YOLO")
         # Make an EPR pair with Bob
         qA = Egemevo.createEPR("Cenkovich")
-
+        print("pair created")
         # Create a qubit to teleport
         q = qubit(Egemevo)
 
         # Prepare the qubit to teleport in |+>
-        #q.X()
+        q.X()
 
         # Apply the local teleportation operations
         q.cnot(qA)
