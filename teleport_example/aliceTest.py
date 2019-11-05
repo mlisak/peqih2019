@@ -38,13 +38,13 @@ from cqc.pythonLib import CQCConnection, qubit
 def main():
 
     # Initialize the connection
-    with CQCConnection("Egemevo") as Alice:
+    with CQCConnection("Egemevo", socket_address=("localhost", 8064)) as Egemevo:
         print("YOLO")
         # Make an EPR pair with Bob
-        qA = Alice.createEPR("Cenkovich")
+        qA = Egemevo.createEPR(("localhost", 8061))
 
         # Create a qubit to teleport
-        q = qubit(Alice)
+        q = qubit(Egemevo)
 
         # Prepare the qubit to teleport in |+>
         #q.X()
@@ -56,12 +56,12 @@ def main():
         # Measure the qubits
         a = q.measure()
         b = qA.measure()
-        to_print = "App {}: Measurement outcomes are: a={}, b={}".format(Alice.name, a, b)
+        to_print = "App {}: Measurement outcomes are: a={}, b={}".format(Egemevo.name, a, b)
         print("|" + "-" * (len(to_print) + 2) + "|")
         print("| " + to_print + " |")
         print("|" + "-" * (len(to_print) + 2) + "|")
 
         # Send corrections to Bob
-        Alice.sendClassical(("128.141.118.251", 8000), [a, b])
+        Egemevo.sendClassical(("localhost", 8061), [a, b])
 
 main()

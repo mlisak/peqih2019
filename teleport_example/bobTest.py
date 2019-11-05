@@ -37,13 +37,13 @@ from cqc.pythonLib import CQCConnection
 def main():
 
     # Initialize the connection
-    with CQCConnection("Cenkovich") as Bob:
+    with CQCConnection("Cenkovich", socket_address=("localhost", 8061)) as Cenkovich:
         print("hi")
         # Make an EPR pair with Alice
-        qB = Bob.recvEPR("Egemevo")
+        qB = Cenkovich.recvEPR("localhost", 8064)
 
         # Receive info about corrections
-        data = Bob.recvClassical()
+        data = Cenkovich.recvClassical()
         message = list(data)
         a = message[0]
         b = message[1]
@@ -56,7 +56,7 @@ def main():
 
             # Measure qubit
         m = qB.measure()
-        to_print = "App {}: Measurement outcome is: {}".format(Bob.name, m)
+        to_print = "App {}: Measurement outcome is: {}".format(Cenkovich.name, m)
         print("|" + "-" * (len(to_print) + 2) + "|")
         print("| " + to_print + " |")
         print("|" + "-" * (len(to_print) + 2) + "|")
