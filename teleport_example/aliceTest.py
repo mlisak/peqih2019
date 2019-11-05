@@ -39,35 +39,32 @@ def main():
 
     # Initialize the connection
     with CQCConnection("Egemevo") as Egemevo:
-        print("YOLO")
-        # Make an EPR pair with Bob
-        qA = Egemevo.createEPR("Cenkovich")
-        print("pair created")
-
-        q_random = qubit(Egemevo)
-        q_random.H()
-        r_number = q_random.measure()
-        print('Random number: ' + str(r_number))
-        # Create a qubit to teleport
-        q = qubit(Egemevo)
-
-        # Prepare the qubit to teleport in |+>
-        if r_number==1:
-            q.X()
-
-        # Apply the local teleportation operations
-        q.cnot(qA)
-        q.H()
-
-        # Measure the qubits
-        a = q.measure()
-        b = qA.measure()
-        to_print = "App {}: Measurement outcomes are: a={}, b={}".format(Egemevo.name, a, b)
-        print("|" + "-" * (len(to_print) + 2) + "|")
-        print("| " + to_print + " |")
-        print("|" + "-" * (len(to_print) + 2) + "|")
-
-        # Send corrections to Bob
-        Egemevo.sendClassical("Cenkovich", [a, b])
+        while True:
+            # Make an EPR pair with Bob
+            qA = Egemevo.createEPR("Cenkovich")
+            # Create a random number
+            q_random = qubit(Egemevo)
+            q_random.H()
+            r_number = q_random.measure()
+            print('Random number: ' + str(r_number))
+            # Create a qubit to teleport
+            q = qubit(Egemevo)
+            # Prepare the qubit to teleport in |+>
+            if r_number==1:
+                q.X()
+            # Apply the local teleportation operations
+            q.cnot(qA)
+            q.H()
+            # Measure the qubits
+            a = q.measure()
+            b = qA.measure()
+            """
+            to_print = "App {}: Measurement outcomes are: a={}, b={}".format(Egemevo.name, a, b)
+            print("|" + "-" * (len(to_print) + 2) + "|")
+            print("| " + to_print + " |")
+            print("|" + "-" * (len(to_print) + 2) + "|")
+            """
+            # Send corrections to Bob
+            Egemevo.sendClassical("Cenkovich", [a, b])
 
 main()
