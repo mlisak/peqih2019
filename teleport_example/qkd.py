@@ -2,6 +2,7 @@ from cqc.pythonLib import CQCConnection, qubit
 import time
 import socket
 import sys
+import json
 def main():
     device_name = str(sys.argv[1])
     if device_name == 'cenkmac':
@@ -18,6 +19,8 @@ def main():
         create_conn(conn,device_name, target_name)
 
 def create_conn(conn,device_name='Egemevo',target_name='Cenkovich'):
+    print('Sending receive to target')
+    send_rec(device_name,target_name)
     print('Starting creating and sending QK')
     secret_key = ''
     with CQCConnection(device_name) as Alice:
@@ -76,7 +79,7 @@ def listen():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Bind the socket to the port
-    server_address = ('localhost', 10000)
+    server_address = ('0.0.0.0', 10000)
     print('starting up on {} port {}'.format(*server_address))
     sock.bind(server_address)
 
@@ -101,4 +104,24 @@ def listen():
 def send(connection,message):
     connection.sendall(str.encode(str(message)) )
     connection.close()
+def send_rec(device_name,target_name):
+    with open('network.json') as f:
+        foo = json.load(f)
+        target_ip,target_port = foo["default"]["nodes"][target_name]["app_socket"] 
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Connect the socket to the port where the server is listening
+    server_address = (target_ip, 10000)
+    print('connecting to {} port {}'.format(*server_address))
+    sock.connect(server_address)
+
+    try:
+        message = str.encode('RECV') 
+        print('sending {!r}'.format(message))
+        sock.sendall(message)
+
+    finally:
+        print('closing socket')
+        sock.close()
+
 main()
