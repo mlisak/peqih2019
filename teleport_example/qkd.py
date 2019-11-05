@@ -6,13 +6,12 @@ def main():
     device_name = str(sys.argv[1])
     if device_name == 'cenkmac':
         target_name = 'bulut'
-    elif device_name == 'bulut':
+    elif device_name == "bulut":
         target_name = 'cenkmac'
-    print(device_name)
-    print(target_name)
+    else:
+        assert False, "Unspecified device name %s" % device_name
 
     comm = listen()
-    print(comm)
     if comm==b'RECV':
         recv_conn(device_name)
     elif comm==b'SEND':
@@ -44,7 +43,7 @@ def create_conn(device_name='Egemevo',target_name='Cenkovich'):
             b = qA.measure()
             Alice.sendClassical(target_name, [a, b])
         print(hex(int(secret_key,2)))
-    send('deneme')
+
 def recv_conn(device_name="Cenkovich"):
     print('Starting receiving QK')
     t0 = time.time()
@@ -96,6 +95,7 @@ def listen():
                 data = connection.recv(4)
                 #print('received {!r}'.format(data))
                 if data:
+                    connection.close()
                     return data
 
         finally:
