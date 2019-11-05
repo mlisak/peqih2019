@@ -38,7 +38,7 @@ def main():
 
     # Initialize the connection
     with CQCConnection("Cenkovich") as Cenkovich:
-        secret_key = []
+        secret_key = ''
         for i in range(256):
             # Make an EPR pair with Alice
             qB = Cenkovich.recvEPR()
@@ -54,7 +54,7 @@ def main():
                 qB.Z()
             # Measure qubit
             m = qB.measure()
-            secret_key.append(m)
+            secret_key += str(m) 
             """
             to_print = "App {}: Measurement outcome is: {}".format(Cenkovich.name, m)
             print("|" + "-" * (len(to_print) + 2) + "|")
@@ -62,6 +62,6 @@ def main():
             print("|" + "-" * (len(to_print) + 2) + "|")
             """
             #print("Measurement outcome is: " + str(m))
-        print(secret_key)
+        print(hex(int(secret_key,2)))
 ##################################################################################################
 main()
