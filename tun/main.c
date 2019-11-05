@@ -1,6 +1,10 @@
 
 /*
-Implement die.
+TODO
+- Implement die. (you can use err_sys and err_quit)
+- Use TCP socket instead of UDP.
+- Read from named domain sockets to receive new keys.
+- Implement using a single select
 */
 
 #include <sys/types.h>          /* basic system data types */
@@ -32,6 +36,12 @@ Implement die.
 
 #define DEFAULT_PORT 10321
 
+
+#define IP_MAXPACKET 1<<16
+
+static uint8_t tx_buf[IP_MAXPACKET];
+static uint8_t rx_buf[IP_MAXPACKET];
+
 struct tun_dev {
     struct in_addr addr;
     struct in_addr dstaddr;
@@ -43,7 +53,7 @@ struct tun_dev {
 struct tun_sock {
     struct sockaddr_in bind;
     struct sockaddr_in peer;
-    int sock; // TODO: rename fd
+    int fd;
 };
 
 struct tun {
@@ -64,10 +74,10 @@ tun_sock_init (struct tun_sock *sock)
     sock->peer.sin_family = AF_INET;
     sock->peer.sin_port = htons(DEFAULT_PORT);
 
-    if ((sock->sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    if ((sock->fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
         err_sys("could not open UDP socket file descriptor");
 
-    if (bind(sock->sock, (struct sockaddr *) &sock->bind, sizeof(sock->bind)))
+    if (bind(sock->fd, (struct sockaddr *) &sock->bind, sizeof(sock->bind)))
         err_sys("could not bind to UDP socket");
 
     err_msg("bound to (UDP) %s:%d", inet_ntoa(sock->bind.sin_addr), ntohs(sock->bind.sin_port));
@@ -179,20 +189,37 @@ tun_init(struct tun *T)
 }
 
 
-void
+void *
 tx_loop(void *args)
 {
+    // TODO(oral): If we want to implement a heartbeat, we will
+    // have to think about select timeouts (both here and in the
+    // select for the socket).
+    int rsel;
+    size_t nread;
     for (;;) {
-
+        FD_ZERO(&rset);
+        FD_SET(T.dev.fd, &rset);
+        if ((rsel = pselect(T.dev.fd + 1, &rset, NULL, NULL, NULL, NULL)) > 0) {
+            if ((nread = read(T.dev.fd, tx_buf, IP_MAXPACKET)) < 0)
+                err_sys("Error reading from tun device");
+            if (nread == 0)
+                err_quit("tun device EOF");
+        }
+        qvpn_send(T.sock.fd, tx_buf, nread); // TODO
     }
+    return NULL;
 }
 
-void
+void *
 rx_loop(void *args)
 {
+    size_t nread;
     for (;;) {
-
+        qvpn_recv(T.sock.fd, rx_buf, &nread);
+        write(T.dev.fd, rx_buf, nread);
     }
+    return NULL;
 }
 
 
