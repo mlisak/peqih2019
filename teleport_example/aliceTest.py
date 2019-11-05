@@ -43,11 +43,17 @@ def main():
         # Make an EPR pair with Bob
         qA = Egemevo.createEPR("Cenkovich")
         print("pair created")
+
+        q_random = qubit(Egemevo)
+        q_random.H()
+        r_number = q_random.measure()
+        print('Random number: ' + str(r_number))
         # Create a qubit to teleport
         q = qubit(Egemevo)
 
         # Prepare the qubit to teleport in |+>
-        q.X()
+        if r_number==1:
+            q.X()
 
         # Apply the local teleportation operations
         q.cnot(qA)
