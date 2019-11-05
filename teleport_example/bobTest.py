@@ -28,14 +28,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cqc.pythonLib import CQCConnection
-
+import time
 
 #####################################################################################################
 #
 # main
 #
 def main():
-
+    t0 = time.time()
     # Initialize the connection
     with CQCConnection("Cenkovich") as Cenkovich:
         secret_key = ''
@@ -62,6 +62,9 @@ def main():
             print("|" + "-" * (len(to_print) + 2) + "|")
             """
             #print("Measurement outcome is: " + str(m))
+
         print(hex(int(secret_key,2)))
+    t1 = time.time()
+    print('It took: ' + str(t1-t0) + ' seconds')
 ##################################################################################################
 main()
