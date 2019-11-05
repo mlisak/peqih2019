@@ -5,11 +5,10 @@ def main():
     # Cenkovich --> RECV
     # device_name = 'Egemevo'
     comm         = 'SEND'
-    while True:
-        if comm=='RECV':
-            recv_conn()
-        elif comm=='SEND':
-            create_conn()
+    if comm=='RECV':
+        recv_conn()
+    elif comm=='SEND':
+        create_conn()
             
 def create_conn(device_name='Egemevo',target_name='Cenkovich'):
     secret_key = ''
