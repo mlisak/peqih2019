@@ -5,6 +5,7 @@ TODO
 - Use TCP socket instead of UDP.
 - Read from named domain sockets to receive new keys.
 - Implement using a single select
+- exec python
 */
 
 #include <sys/types.h>          /* basic system data types */
@@ -35,7 +36,7 @@ TODO
 #define TUN_CLONE_DEV "/dev/net/tun"
 
 #define DEFAULT_PORT 10321
-
+#define QKD_PORT 10000
 
 #define IP_MAXPACKET 1<<16
 
@@ -180,7 +181,6 @@ tun_dev_init (struct tun_dev *dev)
 
 }
 
-
 void 
 tun_init(struct tun *T)
 {
@@ -188,40 +188,35 @@ tun_init(struct tun *T)
     tun_sock_init(&T->sock);
 }
 
-
-void *
-tx_loop(void *args)
+void
+loop()
 {
-    // TODO(oral): If we want to implement a heartbeat, we will
-    // have to think about select timeouts (both here and in the
-    // select for the socket).
+    // NOTE: This should be the largest fd - the one that was opened last.
+    // TODO: Implement timeout
+    int bfd = T.sock.fd;
     int rsel;
     size_t nread;
     for (;;) {
         FD_ZERO(&rset);
-        FD_SET(T.dev.fd, &rset);
-        if ((rsel = pselect(T.dev.fd + 1, &rset, NULL, NULL, NULL, NULL)) > 0) {
-            if ((nread = read(T.dev.fd, tx_buf, IP_MAXPACKET)) < 0)
-                err_sys("Error reading from tun device");
-            if (nread == 0)
-                err_quit("tun device EOF");
+        FD_SET(bfd, &rset);
+        if ((FD_SET(bfd + 1, &rset, NULL, NULL, NULL, NULL > 0) {
+            if (FD_ISSET(T.dev.fd)) {
+                if ((nread = read(T.dev.fd, tx_buf, IP_MAXPACKET)) < 0)
+                    err_sys("Error reading from tun device");
+                if (nread == 0)
+                    err_quit("tun device EOF");
+            }
+            if (FD_ISSET(T.sock.fd)) {
+                if (nread = qvpn_recv(T.sock.fd, rx_buf, &nread)) {
+                    write(T.dev.fd, rx_buf, nread);
+                }
+            } 
+            // TODO: Implement rekeying
         }
-        qvpn_send(T.sock.fd, tx_buf, nread); // TODO
-    }
-    return NULL;
-}
 
-void *
-rx_loop(void *args)
-{
-    size_t nread;
-    for (;;) {
-        qvpn_recv(T.sock.fd, rx_buf, &nread);
-        write(T.dev.fd, rx_buf, nread);
     }
-    return NULL;
-}
 
+}
 
 char procname[256];
 
