@@ -4,12 +4,12 @@ def main():
     # Egemevo --> SEND
     # Cenkovich --> RECV
     # device_name = 'Egemevo'
-    comm         = 'SEND'
+    comm         = 'RECV'
     if comm=='RECV':
-        recv_conn()
+        recv_conn(device_name="Egemevo")
     elif comm=='SEND':
-        create_conn()
-            
+        create_conn(device_name="Cenkovich", target_name="Egemevo")
+
 def create_conn(device_name='Egemevo',target_name='Cenkovich'):
     secret_key = ''
     with CQCConnection(device_name) as Alice:
@@ -59,6 +59,7 @@ def recv_conn(device_name="Cenkovich"):
             secret_key += str(m)
         print(hex(int(secret_key,2)))
     t1 = time.time()
-    print('It took: ' + str(t1-t0) + ' seconds')
+    secs = t1-t0
+    print('It took: %d mins %d seconds' % (secs // 60, secs % 60))
 
 main()
