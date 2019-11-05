@@ -36,16 +36,17 @@ from cqc.pythonLib import CQCConnection, qubit
 # main
 #
 def main():
-
+    secret_key = []
     # Initialize the connection
     with CQCConnection("Egemevo") as Egemevo:
-        while True:
+        for i in range(256):
             # Make an EPR pair with Bob
             qA = Egemevo.createEPR("Cenkovich")
             # Create a random number
             q_random = qubit(Egemevo)
             q_random.H()
             r_number = q_random.measure()
+            secret_key.append(r_number)
             print('Random number: ' + str(r_number))
             # Create a qubit to teleport
             q = qubit(Egemevo)
@@ -66,5 +67,6 @@ def main():
             """
             # Send corrections to Bob
             Egemevo.sendClassical("Cenkovich", [a, b])
-
+        print(secret_key)
 main()
+
