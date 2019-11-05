@@ -20,9 +20,9 @@ try:
     amount_expected = len(message)
 
     while amount_received <= amount_expected:
-        data = sock.recv(4)
+        data = sock.recv(16)
         amount_received += len(data)
-        if len(data)==4:
+        if len(data)==16:
             print(data.decode("utf-8"))
 
 finally:
