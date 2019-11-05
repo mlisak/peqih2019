@@ -38,7 +38,7 @@ from cqc.pythonLib import CQCConnection, qubit
 def main():
 
     # Initialize the connection
-    with CQCConnection("Egemen", socket_address=("localhost", 8000)) as Alice:
+    with CQCConnection("Alice", socket_address=("localhost", 8000)) as Alice:
 
         # Make an EPR pair with Bob
         qA = Alice.createEPR(("128.141.118.251", 8000))

@@ -37,7 +37,7 @@ from cqc.pythonLib import CQCConnection
 def main():
 
     # Initialize the connection
-    with CQCConnection("Cenk", socket_address=("localhost", 8000)) as Bob:
+    with CQCConnection("Bob", socket_address=("localhost", 8000)) as Bob:
 
         # Make an EPR pair with Alice
         qB = Bob.recvEPR(("128.141.118.97", 8000))
