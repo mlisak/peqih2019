@@ -8,7 +8,8 @@ inline static int is_error(int rc, EVP_CIPHER_CTX* ctx)
 
 int encrypt(const unsigned char* in, const int in_len,
             const unsigned char* key, const unsigned char* iv,
-            unsigned char* out, unsigned char* aead)
+            const unsigned char* ad, const int ad_len,
+            unsigned char* out, unsigned char* aead_tag)
 {
   int out_len = 0;
   int ret = 0;
@@ -25,6 +26,13 @@ int encrypt(const unsigned char* in, const int in_len,
   rc = EVP_EncryptInit(ctx, NULL, key, iv);
   if(is_error(rc, ctx)) return -ENC_INIT_FAIL;
 
+  if(ad != NULL && ad_len != 0)
+  {
+    rc = EVP_EncryptUpdate(ctx, NULL, &out_len, ad, ad_len);
+    if(is_error(rc, ctx)) return -ENC_ENCRYPT_FAIL;
+    ret += out_len;
+  }
+
   rc = EVP_EncryptUpdate(ctx, out, &out_len, in, in_len);
   if(is_error(rc, ctx)) return -ENC_ENCRYPT_FAIL;
   ret += out_len;
@@ -33,14 +41,15 @@ int encrypt(const unsigned char* in, const int in_len,
   if(is_error(rc, ctx)) return -ENC_FINAL_FAIL;
   ret+= out_len;
 
-  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, AEAD_TAG_LEN, aead);
+  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, AEAD_TAG_LEN, aead_tag);
   EVP_CIPHER_CTX_free(ctx);
   return ret;
 }
 
 int decrypt(const unsigned char* in, const int in_len,
             const unsigned char* key, const unsigned char* iv,
-            unsigned char* out, unsigned char* aead)
+            const unsigned char* ad, const int ad_len,
+            unsigned char* out, unsigned char* aead_tag)
 {
   int out_len = 0;
   int ret = 0;
@@ -57,11 +66,18 @@ int decrypt(const unsigned char* in, const int in_len,
   rc = EVP_DecryptInit(ctx, NULL, key, iv);
   if(is_error(rc, ctx)) return -ENC_INIT_FAIL;
 
+  if(ad != NULL && ad_len != 0)
+  {
+    rc = EVP_DecryptUpdate(ctx, NULL, &out_len, ad, ad_len);
+    if(is_error(rc, ctx)) return -ENC_ENCRYPT_FAIL;
+    ret += out_len;
+  }
+
   rc = EVP_DecryptUpdate(ctx, out, &out_len, in, in_len);
   if(is_error(rc, ctx)) return -ENC_ENCRYPT_FAIL;
   ret += out_len;
 
-  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, AEAD_TAG_LEN, aead);
+  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, AEAD_TAG_LEN, aead_tag);
   rc = EVP_DecryptFinal(ctx, out, &out_len);
   if(is_error(rc, ctx)) return -ENC_FINAL_FAIL;
   ret += out_len;
