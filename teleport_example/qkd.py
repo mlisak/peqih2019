@@ -1,5 +1,5 @@
 from cqc.pythonLib import CQCConnection, qubit
-
+import time
 def main():    
     # Egemevo --> SEND
     # Cenkovich --> RECV
