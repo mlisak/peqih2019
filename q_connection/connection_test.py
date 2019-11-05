@@ -33,6 +33,8 @@ def main():
 
                         # Alternate between who sends and receives
                         conn_source, conn_sink = (conn1, conn2) if appID % 2 == 0 else (conn2, conn1)
+                        print(conn_sink.name)
+                        assert False
                         q1 = conn_source.createEPR(conn_sink.name, remote_appID=appID)
                         q2 = conn_sink.recvEPR()
                         m1 = q1.measure()

@@ -3,12 +3,8 @@ from cqc.pythonLib import CQCConnection, qubit
 
 # AWS host/port information for nodes
 sock_info = {
-    "Saravejo": ("", 8011),
-    "Dublin": ("", 8014),
-    "Delft": ("", 8017),
-    "Paris": ("", 8020),
-    "Padua": ("", 8023),
-    "Geneva": ("", 8026)
+    "Cenkovich": ("", 8061),
+    "Egemevo": ("", 8071),
 }
 
 
@@ -20,7 +16,9 @@ def main():
         sock_info[node] = (args.host, info[1])
 
     try:
+
         nodes = list(sock_info.keys())
+        """
         for i in range(len(nodes)):
             node1 = nodes[i]
             for j in range(i+1, len(nodes)):
@@ -43,6 +41,7 @@ def main():
         print("Test 1: Successfully verified creating EPR pairs.")
 
         # Test sending qubits between nodes
+
         for i in range(len(nodes)):
             node1 = nodes[i]
             for j in range(i+1, len(nodes)):
@@ -59,6 +58,24 @@ def main():
                         conn_source.sendQubit(q, conn_sink.name, remote_appID=appID)
                         q = conn_sink.recvQubit()
                         q.measure()
+        """
+
+        node1 = nodes[0]
+        node2 = nodes[1]
+        for appID in range(10):
+            print(sock_info[node1])
+            with CQCConnection(node1, socket_address=sock_info[node1], appID=appID) as conn1,\
+                    CQCConnection(node2, socket_address=sock_info[node2], appID=appID) as conn2:
+
+                # Alternate between who sends and receives
+
+                conn_source, conn_sink = (conn1, conn2) if appID % 2 == 0 else (conn2, conn1)
+                print(conn_sink.name)
+                assert False
+                q = qubit(conn_source)
+                conn_source.sendQubit(q, conn_sink.name, remote_appID=appID)
+                q = conn_sink.recvQubit()
+                q.measure()
 
         print("Test 2: Successfully verified sending qubits.")
 
