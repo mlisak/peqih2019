@@ -38,10 +38,10 @@ from cqc.pythonLib import CQCConnection, qubit
 def main():
 
     # Initialize the connection
-    with CQCConnection("Alice", socket_address=("localhost", 8000)) as Alice:
-
+    with CQCConnection("Egemevo") as Alice:
+        print("YOLO")
         # Make an EPR pair with Bob
-        qA = Alice.createEPR(("128.141.118.251", 8000))
+        qA = Alice.createEPR("Cenkovich")
 
         # Create a qubit to teleport
         q = qubit(Alice)
