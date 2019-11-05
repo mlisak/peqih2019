@@ -1,6 +1,6 @@
 from cqc.pythonLib import CQCConnection, qubit
 import time
-def main():    
+def main():
     # Egemevo --> SEND
     # Cenkovich --> RECV
     # device_name = 'Egemevo'
@@ -10,6 +10,7 @@ def main():
             recv_conn()
         elif comm=='SEND':
             create_conn()
+            
 def create_conn(device_name='Egemevo',target_name='Cenkovich'):
     secret_key = ''
     with CQCConnection(device_name) as Alice:
@@ -23,7 +24,7 @@ def create_conn(device_name='Egemevo',target_name='Cenkovich'):
             secret_key += str(r_number)
             #print('Random number: ' + str(r_number))
             # Create a qubit to teleport
-            q = qubit(Egemevo)
+            q = qubit(Alice)
             # Prepare the qubit to teleport in |+>
             if r_number==1:
                 q.X()
@@ -33,8 +34,9 @@ def create_conn(device_name='Egemevo',target_name='Cenkovich'):
             # Measure the qubits
             a = q.measure()
             b = qA.measure()
-            Egemevo.sendClassical("Cenkovich", [a, b])
+            Alice.sendClassical(target_name, [a, b])
         print(hex(int(secret_key,2)))
+
 def recv_conn(device_name="Cenkovich"):
     t0 = time.time()
     # Initialize the connection
@@ -55,10 +57,9 @@ def recv_conn(device_name="Cenkovich"):
                 qB.Z()
             # Measure qubit
             m = qB.measure()
-            secret_key += str(m) 
+            secret_key += str(m)
         print(hex(int(secret_key,2)))
     t1 = time.time()
     print('It took: ' + str(t1-t0) + ' seconds')
 
 main()
-
