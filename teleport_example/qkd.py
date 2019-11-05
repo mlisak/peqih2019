@@ -11,13 +11,13 @@ def main():
     else:
         assert False, "Unspecified device name %s" % device_name
 
-    comm = listen()
+    conn,comm = listen()
     if comm==b'RECV':
-        recv_conn(device_name)
+        recv_conn(conn,device_name)
     elif comm==b'SEND':
-        create_conn(device_name, target_name)
+        create_conn(conn,device_name, target_name)
 
-def create_conn(device_name='Egemevo',target_name='Cenkovich'):
+def create_conn(conn,device_name='Egemevo',target_name='Cenkovich'):
     print('Starting creating and sending QK')
     secret_key = ''
     with CQCConnection(device_name) as Alice:
@@ -43,8 +43,8 @@ def create_conn(device_name='Egemevo',target_name='Cenkovich'):
             b = qA.measure()
             Alice.sendClassical(target_name, [a, b])
         print(hex(int(secret_key,2)))
-
-def recv_conn(device_name="Cenkovich"):
+    send(conn,hex(int(secret_key,2)))
+def recv_conn(conn,device_name="Cenkovich"):
     print('Starting receiving QK')
     t0 = time.time()
     # Initialize the connection
@@ -70,7 +70,7 @@ def recv_conn(device_name="Cenkovich"):
     t1 = time.time()
     secs = t1-t0
     print('It took: %d mins %d seconds' % (secs // 60, secs % 60))
-
+    send(conn,hex(int(secret_key,2)))
 def listen():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -95,27 +95,10 @@ def listen():
                 data = connection.recv(4)
                 #print('received {!r}'.format(data))
                 if data:
-                    connection.close()
-                    return data
-
-        finally:
-            # Clean up the connection
-            connection.close()
-def send(message='key'):
-        # Create a TCP/IP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # Connect the socket to the port where the server is listening
-    server_address = ('localhost', 10000)
-    print('connecting to {} port {}'.format(*server_address))
-    sock.connect(server_address)
-
-    try:
-        print('sending {!r}'.format(message))
-        sock.sendall(message)
-
-    finally:
-        print('closing socket')
-        sock.close()
-
+                    return connection,data
+        except:
+            pass
+def send(connection,message):
+    connection.sendall(str.encode(str(message)) )
+    connection.close()
 main()

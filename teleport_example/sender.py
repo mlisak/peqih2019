@@ -15,6 +15,16 @@ try:
     print('sending {!r}'.format(message))
     sock.sendall(message)
 
+    # Look for the response
+    amount_received = 0
+    amount_expected = len(message)
+
+    while amount_received <= amount_expected:
+        data = sock.recv(4)
+        amount_received += len(data)
+        if len(data)==4:
+            print(data.decode("utf-8"))
+
 finally:
     print('closing socket')
     sock.close()

@@ -4,7 +4,7 @@ simulaqron set network-config-file $(pwd)/network.json
 
 name=$(hostname | cut -d . -f 1)
 if [ "$name" == "cenkmac" ]; then
-  echo "yolo"
+  echo "Starting!"
 else
   name="bulut"
 fi
