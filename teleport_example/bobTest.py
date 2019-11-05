@@ -37,10 +37,10 @@ from cqc.pythonLib import CQCConnection
 def main():
 
     # Initialize the connection
-    with CQCConnection("Cenkovich", socket_address=("localhost", 8061)) as Cenkovich:
+    with CQCConnection("Cenkovich") as Cenkovich:
         print("hi")
         # Make an EPR pair with Alice
-        qB = Cenkovich.recvEPR("localhost", 8064)
+        qB = Cenkovich.recvEPR()
 
         # Receive info about corrections
         data = Cenkovich.recvClassical()

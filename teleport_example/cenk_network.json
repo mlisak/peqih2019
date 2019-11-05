@@ -1,38 +1,35 @@
 {
     "default": {
         "nodes": {
-            "Cenkovich": {
-                "app_socket": [
-                    "localhost",
-                    8060
-                ],
-                "cqc_socket": [
-                    "localhost",
-                    8061
-                ],
-                "vnode_socket": [
-                    "localhost",
-                    8062
-                ]
-            },
             "Egemevo": {
                 "app_socket": [
-                    "localhost",
-                    8063
+                    "128.141.118.97",
+                    8000
                 ],
                 "cqc_socket": [
-                    "localhost",
-                    8064
+                    "128.141.118.97",
+                    8001
                 ],
                 "vnode_socket": [
-                    "localhost",
-                    8065
+                    "128.141.118.97",
+                    8002
+                ]
+            },
+            "Cenkovich": {
+                "app_socket": [
+                    "128.141.118.95",
+                    8003
+                ],
+                "cqc_socket": [
+                    "128.141.118.95",
+                    8004
+                ],
+                "vnode_socket": [
+                    "128.141.118.95",
+                    8005
                 ]
             }
         },
-        "topology": {
-         "Cenkovich": ["Egemevo"],
-         "Egemevo": ["Cenkovich"]
-        }
+        "topology": null
     }
 }

@@ -38,10 +38,10 @@ from cqc.pythonLib import CQCConnection, qubit
 def main():
 
     # Initialize the connection
-    with CQCConnection("Egemevo", socket_address=("localhost", 8064)) as Egemevo:
+    with CQCConnection("Egemevo") as Egemevo:
         print("YOLO")
         # Make an EPR pair with Bob
-        qA = Egemevo.createEPR(("localhost", 8061))
+        qA = Egemevo.createEPR("Cenkovich")
 
         # Create a qubit to teleport
         q = qubit(Egemevo)
@@ -62,6 +62,6 @@ def main():
         print("|" + "-" * (len(to_print) + 2) + "|")
 
         # Send corrections to Bob
-        Egemevo.sendClassical(("localhost", 8061), [a, b])
+        Egemevo.sendClassical("Cenkovich", [a, b])
 
 main()
