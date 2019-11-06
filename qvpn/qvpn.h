@@ -2,8 +2,8 @@
  * Author: K. Potamianos <karolos.potamianos@gmail.com>
  */
 
-#include <cstdint>
-
+#include <stdint.h>
+#include <sys/types.h>
 
 /*
  * QVPN packet header
@@ -14,36 +14,42 @@
  * - key_pos: position in key stream
  */
 
-struct qvpn_header_t {
+typedef struct {
   uint8_t aead[16];
-  /*
   union {
-    uint8_t assoc_data[4];
+    uint8_t assoc_data[2];
     struct {
-      uint16_t msg_pos;
-      uint16_t key_pos;
+      uint16_t msg_len;
     };
-  }
-  */ 
-};
+  };
+} qvpn_header_t;
 
 /* Todo: fine proper header definition for max IP size */
-const unsigned int QVPN_BUF_SIZE = 1<<16;
+#define QVPN_BUF_SIZE (1<<16)
 
-struct qvpn_state_t {
+
+typedef struct {
+  union {
+    uint8_t buffer[QVPN_BUF_SIZE];
+    qvpn_header_t header;
+  };
+  uint16_t to_get;
+  int mode; /* 0 for header, 1 for payload */
+} qvpn_buf_t;
+
+typedef struct {
   uint8_t iv[12];
   uint8_t key[32];
-  uint8_t tx_buf[QVPN_BUF_SIZE];
-  uint8_t rx_buf[QVPN_BUF_SIZE];
+  qvpn_buf_t tx_buf;
+  qvpn_buf_t rx_buf;
+} qvpn_state_t;
 
-};
 
+int qvpn_rekey(uint8_t key[32]);
+int qvpn_init(uint8_t key[32]);
 
-int qvpn_rekey(qvpn_state_t *qvpn_state);
-int qvpn_init();
+ssize_t qvpn_sendpacket(int socket, const qvpn_buf_t* qvpn_buf, size_t len);
+ssize_t qvpn_recvpacket(int socket, qvpn_buf_t* qvpn_buf);
 
-ssize_t qvpn_sendpacket(int socket, const void *buf, size_t len);
-ssize_t qvpn_recvpacket(int socket, const void *buf, size_t* len);
-
-ssize_t qvpn_send(int socket, const void *buf, size_t len);
-ssize_t qvpn_recv(int socket, size_t* len);
+ssize_t qvpn_send(int socket, const uint8_t* qvpn_buf, size_t len);
+ssize_t qvpn_recv(int socket, uint8_t* qvpn_buf, size_t* len);
