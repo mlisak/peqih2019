@@ -3,6 +3,7 @@
  */
 
 #include "qvpn.h"
+#include "error.h"
 
 #include <err.h>
 #include <string.h>
@@ -91,10 +92,8 @@ ssize_t qvpn_send(int socket, const uint8_t *buf, size_t len) {
     qvpn_header_t* header;
     int err;
 
-    /*
     if( len + sizeof(qvpn_header_t) >= QVPN_BUF_SIZE )
-      die("Cannot send packet larger than 65535, including header.");
-    */
+      err_quit("Cannot send packet larger than 65535, including header.");
 
     header = &qvpn_state.tx_buf.header;
     header->msg_len = len;
