@@ -236,15 +236,36 @@ loop()
 
 }
 
-void
-generate_network_json()
+int
+getenv_int(const char* var_name)
 {
-    char buf[4096];
-    FILE *f = fopen("/usr/local/opt/qvpn/network.json.template", "r");
-    fgets(buf, sizeof(buf), f);
-    fclose(f);
+    int ret;
+    const char* var_value_str = getenv(var_name);
+    if(var_value_str == NULL)
+        return -1;
 
-    printf("%s\n", buf);
+    return atoi(var_value_str);
+}
+
+int
+drop_permissions()
+{
+    int status = 0;
+
+    uid_t uid = getuid();
+
+    if(uid != 0) // Not running as root, no need to drop permissions
+        return 0;
+
+    uid_t suid_uid = (uid_t) getenv_int("SUDO_UID");
+    gid_t sudo_gid = (git_t) getenv_int("SUDO_GID");
+
+    if(uid_t < 0 || gid_t < 0) // Running as root, but not with sudo, PROLLY BAD
+        err_quit("Running as root without sudo, not cool");
+
+    setuid(sudo_uid);
+    setgid(sudo_gid);
+    return 0;
 }
 
 pid_t
@@ -256,6 +277,7 @@ init_qkd_script()
     if ((pid = fork()) < 0) {
         err_sys("fork error");
     } else if (pid == 0) { // child
+        drop_permissions(); // TODO(mlisak): It would be better to drop permissions right after creating network device, check if we can do that
         chdir("/usr/local/opt/qvpn")
         if (execl("/usr/local/opt/qvpn/run.sh", (char * )0) < 0)
             err_sys("execl error");
