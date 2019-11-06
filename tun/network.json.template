@@ -1,0 +1,35 @@
+{
+    "default": {
+        "nodes": {
+            "bulut": {
+                "app_socket": [
+                    "%s",
+                    8003
+                ],
+                "cqc_socket": [
+                    "%s",
+                    8004
+                ],
+                "vnode_socket": [
+                    "%s",
+                    8005
+                ]
+            },
+            "cenkmac": {
+                "app_socket": [
+                    "%s",
+                    8003
+                ],
+                "cqc_socket": [
+                    "%s",
+                    8004
+                ],
+                "vnode_socket": [
+                    "%s",
+                    8005
+                ]
+            }
+        },
+        "topology": null
+    }
+}
