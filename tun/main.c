@@ -236,6 +236,17 @@ loop()
 
 }
 
+void
+generate_network_json()
+{
+    char buf[4096];
+    FILE *f = fopen("/usr/local/opt/qvpn/network.json.template", "r");
+    fgets(buf, sizeof(buf), f);
+    fclose(f);
+
+    printf("%s\n", buf);
+}
+
 pid_t
 init_qkd_script()
 {
@@ -272,6 +283,9 @@ char procname[256];
 int
 main (int argc, char **argv)
 {
+
+    generate_network_json();
+
     sprintf(procname, "tun-test");
     err_setprogname(procname);
 
