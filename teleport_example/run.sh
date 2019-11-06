@@ -1,4 +1,13 @@
 #!/bin/sh
+simulaqron stop
+simulaqron set network-config-file $(pwd)/network.json
 
-python3 aliceTest.py &
-python3 bobTest.py &
+name=$(hostname | cut -d . -f 1)
+if [ "$name" == "cenkmac" ]; then
+  echo "Starting!"
+else
+  name="bulut"
+fi
+simulaqron start --nodes "$name" --keep
+python3 qkd.py "$name"
+simulaqron stop
