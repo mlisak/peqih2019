@@ -1,5 +1,6 @@
 #!/bin/sh
 simulaqron stop
+simulaqron reset -f
 simulaqron set network-config-file $(pwd)/network.json
 
 name=$(hostname | cut -d . -f 1)
