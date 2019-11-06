@@ -38,7 +38,7 @@ def create_conn(conn,device_name,target_name):
             # Create a qubit to teleport
             q = qubit(Alice)
             # Prepare the qubit to teleport in |+>
-            if r_number==1:
+            if r_number==1:    
                 q.X()
             # Apply the local teleportation operations
             q.cnot(qA)
@@ -51,9 +51,10 @@ def create_conn(conn,device_name,target_name):
     t1 = time.time()
     secs = t1-t0
     print('It took: %d mins %d seconds' % (secs // 60, secs % 60))
+    print(bitstring_to_bytes(secret_key))
     send(conn,hex(int(secret_key,2))) # Sending the result back
 def recv_conn(conn,device_name):
-    conn.close()
+    #conn.close()
     print('Starting receiving QK')
     t0 = time.time()
     # Initialize the connection
@@ -85,7 +86,7 @@ def listen():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Bind the socket to the port
-    server_address = ('localhost', 10001)
+    server_address = ('0.0.0.0', 10000)
     print('starting up on {} port {}'.format(*server_address))
     sock.bind(server_address)
     # Listen for incoming connections
@@ -104,6 +105,8 @@ def listen():
                     return connection,data
         except:
             pass
+def bitstring_to_bytes(s):
+    return int(s, 2).to_bytes(len(s) // 8, byteorder='big')
 def send(connection,message):
     connection.sendall(str.encode(str(message)))
     connection.close()
