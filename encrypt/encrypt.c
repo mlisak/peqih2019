@@ -1,9 +1,40 @@
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "encrypt.h"
 
 inline static int is_error(int rc, EVP_CIPHER_CTX* ctx)
 {
   if(rc == 0) EVP_CIPHER_CTX_free(ctx);
   return rc == 0 ? 1 : 0;
+}
+
+size_t fill_with_random(unsigned char* buf, size_t len)
+{
+  int dev_random_fd = open("/dev/urandom", O_RDONLY);
+  if(dev_random_fd < 0) return -1;
+
+  size_t result = read(dev_random_fd, buf, len);
+  close(dev_random_fd);
+  
+  return result;
+}
+
+unsigned char* get_random_bytes(size_t len)
+{
+  unsigned char* buf = (unsigned char*) malloc(len);
+  if(buf == NULL) return NULL;
+
+  size_t result = fill_with_random(buf, len);
+  if(result < 0)
+  {
+    free(buf);
+    return NULL;
+  }
+
+  return buf;
 }
 
 int encrypt(const unsigned char* in, const int in_len,
