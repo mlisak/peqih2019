@@ -3,6 +3,7 @@ import time
 import socket
 import sys
 import json
+import os
 def main():
     device_name = str(sys.argv[1])
     if device_name == 'cenkmac':
@@ -11,7 +12,7 @@ def main():
         target_name = 'cenkmac'
     else:
         assert False, "Unspecified device name %s" % device_name
-    
+
     conn,comm = listen()
     if comm==b'RECV':
         recv_conn(conn,device_name)
@@ -38,7 +39,7 @@ def create_conn(conn,device_name,target_name):
             # Create a qubit to teleport
             q = qubit(Alice)
             # Prepare the qubit to teleport in |+>
-            if r_number==1:    
+            if r_number==1:
                 q.X()
             # Apply the local teleportation operations
             q.cnot(qA)
@@ -84,10 +85,14 @@ def recv_conn(conn,device_name):
     send(conn,hex(int(secret_key,2)))
 def listen():
     # Create a TCP/IP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     # Bind the socket to the port
-    server_address = ('0.0.0.0', 10000)
-    print('starting up on {} port {}'.format(*server_address))
+
+    server_address = "/tmp/qvpm.socket"
+
+    if os.path.exists(server_address):
+        os.remove(server_address)
+
     sock.bind(server_address)
     # Listen for incoming connections
     sock.listen(1)
@@ -113,7 +118,7 @@ def send(connection,message):
 def send_rec(device_name,target_name):
     with open('network.json') as f:
         foo = json.load(f)
-        target_ip,target_port = foo["default"]["nodes"][target_name]["app_socket"] 
+        target_ip,target_port = foo["default"]["nodes"][target_name]["app_socket"]
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Connect the socket to the port where the server is listening
@@ -121,7 +126,7 @@ def send_rec(device_name,target_name):
     print('connecting to {} port {}'.format(*server_address))
     sock.connect(server_address)
     try:
-        message = str.encode('RECV') 
+        message = str.encode('RECV')
         print('sending {!r}'.format(message))
         sock.sendall(message)
     finally:
