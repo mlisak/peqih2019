@@ -50,20 +50,20 @@ ssize_t qvpn_recvpacket(int socket, const void* qvpnbuf, size_t len) {
 
 ssize_t qvpn_send(int socket, const uint8_t* buf, size_t len) {
     qvpn_header_t* header;
-    int ret;
+    int err;
 
     if( len + sizeof(qvpn_header_t) >= QVPN_BUF_SIZE )
       die("Cannot send packet larger than 65535, including header.");
 
     header = tx_buf;
 
-    ret = encrypt(buf, len, qvpn_state.key, qvpn_state.iv, tx_buf+sizeof(qvpn_header_t), header->aead);
+    err = encrypt(buf, len, qvpn_state.key, qvpn_state.iv, NULL, 0, tx_buf+sizeof(qvpn_header_t), header->aead);
     /* Todo: handle error cases */
 
-    ret = qvpn_sendpacket(socket, tx_buf, sizeof(qvpn_header_t)+len);
+    err = qvpn_sendpacket(socket, tx_buf, sizeof(qvpn_header_t)+len);
     /* Todo: handle error cases */
 
-    return ret;
+    return err;
 }
 
 /*
@@ -73,16 +73,14 @@ ssize_t qvpn_send(int socket, const uint8_t* buf, size_t len) {
 
 ssize_t qvpn_recv(int socket, const uint8_t* buf, size_t* len) {
     qvpn_header_t* header;
-    int ret;
+    int err;
 
-    ret = qvpn_recvpacket(socket, rx_buf, len);
+    err = qvpn_recvpacket(socket, rx_buf, len);
     /* Todo: handle error cases */
     header = (qvpn_header_t*) rx_buf;
 
-    ret = decrypt(rx_buf+sizeof(qvpn_header_t), len, qvpn_sate.key, qvpn_state.iv, buf, header->aead);
+    err = decrypt(rx_buf+sizeof(qvpn_header_t), len, qvpn_sate.key, qvpn_state.iv, NULL, 0, buf, header->aead);
     /* Todo: handle error cases */
 
-    if( ret ) *len = 0;
-
-    return ret;
+    return err;
 }
