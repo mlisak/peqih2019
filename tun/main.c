@@ -51,9 +51,13 @@ struct tun_dev {
     int mtu;
 };
 
+#define MODE_CLIENT 0
+#define MODE_SERVER 1
+
 struct tun_sock {
     struct sockaddr_in bind;
     struct sockaddr_in peer;
+    int mode;
     int fd;
 };
 
@@ -79,6 +83,7 @@ tun_sock_init (struct tun_sock *sock)
 {
     //memset (sock, 0, sizeof(*sock));
 
+#if 0
     sock->bind.sin_family = AF_INET;
     sock->bind.sin_port = htons(DEFAULT_PORT);
 
@@ -93,6 +98,44 @@ tun_sock_init (struct tun_sock *sock)
 
     err_msg("bound to (UDP) %s:%d", inet_ntoa(sock->bind.sin_addr), ntohs(sock->bind.sin_port));
     err_msg(" peer is (UDP) %s:%d", inet_ntoa(sock->peer.sin_addr), ntohs(sock->peer.sin_port));
+#endif
+
+    sock->bind.sin_family = AF_INET;
+    sock->bind.sin_port = htons(DEFAULT_PORT);
+
+    sock->peer.sin_family AF_INET;
+    sock->peer.sin_port = htons(DEFAULT_PORT);
+
+    if (T.sock.mode == MODE_SERVER) {
+        int ssock;
+        if ((ssock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+            err_sys("could not create server socket");
+        
+        if (bind(ssock, (struct sockaddr *) &sock->bind, sizeof(sock->bind))
+            err_sys("could not bind to TCP socket");
+
+        if (listen(ssock, 1))
+            err_sys("could not listen");
+
+        err_msg("listening on (TCP) %s:%d", inet_ntoa(sock->bind.sin_addr), ntohs(sock->bind.sin_port));
+
+        if ((sock->fd = accept(ssock, (struct sockaddr *) &sock->peer, sizeof(sock->peer))) < 0)
+            err_sys("server accept failed");
+
+        err_msg("accepted client connection");
+
+        close(ssock);
+    } 
+
+    else {
+        if ((sock->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+            err_sys("could not create client socket");
+
+        if (connect(sock->fd, (struct sockaddr *) &sock->peer, sizeof(sock->peer)))
+            err_sys("could not connect to server");
+
+        err_msg("connected to server");
+    }
 
 }
 
@@ -315,9 +358,14 @@ main (int argc, char **argv)
     inet_aton(argv[2], &T.dev.dstaddr);
     T.dev.mtu = 1500;
 
-    printf("%s\n", argv[3]);
     inet_aton(argv[3], &T.sock.bind.sin_addr);
     inet_aton(argv[4], &T.sock.peer.sin_addr);
+
+    if (argc > 4 && !strcmp(argv[5], "server")) {
+        T.sock.mode = MODE_SERVER;
+    } else {
+        T.sock.mode = MODE_CLIENT;
+    }
 
     tun_init(&T);
 
