@@ -11,6 +11,31 @@
 #define IV_LEN 12
 #define AEAD_TAG_LEN 16
 
+/* Fills a buffer with random bytes from /dev/urandom.
+ * 
+ * buf - buffer to fill
+ * len - number of random bytes to write into buffer
+ *
+ * return value - number of bytes written to buf.
+ * Negative value indicates error.
+ */
+
+size_t fill_with_random(unsigned char* buf, size_t len);
+
+/* Allocates a buffer, and fills it with random bytes
+ * from /dev/urandom.
+ *
+ * len - number of random bytes to get
+ * 
+ * return value - address of allocated buffer containing
+ * random data.
+ *
+ * THIS FUNCTION ALLOCATES MEMORY. IT IS CALLER'S RESPONSIBILITY
+ * TO FREE IT AFTER USING.
+ */
+
+unsigned char* get_random_bytes(size_t len);
+
 /* Wrappers for openssl's AES-256-GCM
  *
  * For both functions:

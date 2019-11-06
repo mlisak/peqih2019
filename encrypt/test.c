@@ -6,26 +6,6 @@
 
 #include "encrypt.h"
 
-// Allocates memory, REMEMBER TO free() AFTER USING
-unsigned char* get_random_bytes(size_t len)
-{
-  int dev_random_fd = open("/dev/urandom", O_RDONLY);
-  if(dev_random_fd < 0) return NULL;
-
-  unsigned char* buf = (unsigned char*) malloc(len);
-  if(buf == NULL) return NULL;
-
-  size_t result = read(dev_random_fd, buf, len);
-  close(dev_random_fd);
-  if(result < 0)
-  {
-    free(buf);
-    return NULL;
-  }
-
-  return buf;
-}
-
 int main(int argc, char* argv[])
 {
   unsigned char* input;
