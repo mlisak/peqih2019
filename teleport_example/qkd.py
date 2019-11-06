@@ -13,11 +13,12 @@ def main():
     else:
         assert False, "Unspecified device name %s" % device_name
 
-    comm = listen()
-    if comm==b'RECV':
-        recv_conn(device_name)
-    elif comm==b'SEND':
-        create_conn(device_name,target_name)
+    while True:
+        comm = listen()
+        if comm==b'RECV':
+            recv_conn(device_name)
+        elif comm==b'SEND':
+            create_conn(device_name,target_name)
 
 def create_conn(device_name,target_name):
     t0 = time.time()
@@ -106,6 +107,7 @@ def listen(unix=True):
                 #print('received {!r}'.format(data))
                 if data:
                     connection.close()
+                    sock.close()
                     return data
 
         except Exception as e:
