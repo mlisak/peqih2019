@@ -11,20 +11,21 @@ def main():
         target_name = 'cenkmac'
     else:
         assert False, "Unspecified device name %s" % device_name
-        
+    
     conn,comm = listen()
     if comm==b'RECV':
         recv_conn(conn,device_name)
     elif comm==b'SEND':
         create_conn(conn,device_name,target_name)
 
-def create_conn(conn,device_name='Egemevo',target_name='Cenkovich'):
+def create_conn(conn,device_name,target_name):
     t0 = time.time()
-    print('Sending RECV from %s receive to %s' %(device_name,target_name))
+    print('Sending RECV from %s to %s' %(device_name,target_name))
     #send_rec(device_name,target_name)
-    print('Starting creating and sending QK from: %s to: %s' %%(device_name,target_name) )
+    print('Starting creating and sending QK from: %s to: %s' %(device_name,target_name) )
     secret_key = ''
     with CQCConnection(device_name) as Alice:
+        print('start comm')
         for i in range(256):
             # Make an EPR pair with Bob
             qA = Alice.createEPR(target_name)
@@ -51,13 +52,13 @@ def create_conn(conn,device_name='Egemevo',target_name='Cenkovich'):
     secs = t1-t0
     print('It took: %d mins %d seconds' % (secs // 60, secs % 60))
     send(conn,hex(int(secret_key,2))) # Sending the result back
-def recv_conn(conn,device_name="Cenkovich"):
+def recv_conn(conn,device_name):
     conn.close()
     print('Starting receiving QK')
     t0 = time.time()
     # Initialize the connection
     with CQCConnection(device_name) as Bob:
-        print('cenk')
+        print('start comm')
         secret_key = ''
         for i in range(256):
             # Make an EPR pair with Alice
@@ -84,7 +85,7 @@ def listen():
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Bind the socket to the port
-    server_address = ('localhost', 10000)
+    server_address = ('localhost', 10001)
     print('starting up on {} port {}'.format(*server_address))
     sock.bind(server_address)
     # Listen for incoming connections
@@ -95,7 +96,6 @@ def listen():
         connection, client_address = sock.accept()
         try:
             print('connection from', client_address)
-
             # Receive the data in small chunks and retransmit it
             while True:
                 data = connection.recv(4)
@@ -105,7 +105,7 @@ def listen():
         except:
             pass
 def send(connection,message):
-    connection.sendall(str.encode(str(message)) )
+    connection.sendall(str.encode(str(message)))
     connection.close()
 def send_rec(device_name,target_name):
     with open('network.json') as f:

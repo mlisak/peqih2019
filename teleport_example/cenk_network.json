@@ -1,31 +1,31 @@
 {
     "default": {
         "nodes": {
-            "Egemevo": {
+            "bulut": {
                 "app_socket": [
-                    "128.141.118.97",
+                    "localhost",
                     8003
                 ],
                 "cqc_socket": [
-                    "128.141.118.97",
+                    "local_host",
                     8004
                 ],
                 "vnode_socket": [
-                    "128.141.118.97",
+                    "localhost",
                     8005
                 ]
             },
-            "Cenkovich": {
+            "cenkmac": {
                 "app_socket": [
-                    "128.141.118.95",
+                    "localhost",
                     8010
                 ],
                 "cqc_socket": [
-                    "128.141.118.95",
+                    "localhost",
                     8011
                 ],
                 "vnode_socket": [
-                    "128.141.118.95",
+                    "localhost",
                     8012
                 ]
             }
