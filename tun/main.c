@@ -258,7 +258,7 @@ drop_permissions()
         return 0;
 
     uid_t suid_uid = (uid_t) getenv_int("SUDO_UID");
-    gid_t sudo_gid = (git_t) getenv_int("SUDO_GID");
+    gid_t sudo_gid = (gid_t) getenv_int("SUDO_GID");
 
     if(uid_t < 0 || gid_t < 0) // Running as root, but not with sudo, PROLLY BAD
         err_quit("Running as root without sudo, not cool");
