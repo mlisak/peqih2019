@@ -57,10 +57,20 @@ struct tun_sock {
     int fd;
 };
 
+
+#define KEY_LENGTH 32 // AES-256
+
+struct qkd {
+    uint8_t key[KEY_LENGTH];
+    int fd;
+}
+
 struct tun {
     struct tun_dev dev;
     struct tun_sock sock;
+    struct qkd qkd;
 };
+
 
 static struct tun T;
 
@@ -192,13 +202,14 @@ void
 loop()
 {
     // NOTE: This should be the largest fd - the one that was opened last.
-    // TODO: Implement timeout
     int bfd = T.sock.fd;
     int rsel;
+    int ret;
     size_t nread;
     for (;;) {
         FD_ZERO(&rset);
         FD_SET(bfd, &rset);
+        // TODO: Implement timeout
         if ((FD_SET(bfd + 1, &rset, NULL, NULL, NULL, NULL > 0) {
             if (FD_ISSET(T.dev.fd)) {
                 if ((nread = read(T.dev.fd, tx_buf, IP_MAXPACKET)) < 0)
@@ -207,16 +218,42 @@ loop()
                     err_quit("tun device EOF");
             }
             if (FD_ISSET(T.sock.fd)) {
-                if (nread = qvpn_recv(T.sock.fd, rx_buf, &nread)) {
+                do {
+                    ret = qvpn_recv(T.sock.fd, rx_buf, &nread);
+                    if (ret != 0) {
+                        err_quit("Error reading from socket");
+                    }
                     write(T.dev.fd, rx_buf, nread);
-                }
+                } while (nread > 0);
             } 
-            // TODO: Implement rekeying
+            if (FD_ISSET(T.qkd.fd)) { // TODO
+                if ((nread = read(T.qkd.fd, &T.qkd.key, KEYLEY)) < 0)
+                    err_sys("Error reading new key");
+                qvpn_rekey(&T.qkd.key);
+            }
         }
-
     }
 
 }
+
+int
+meet_the_forkers()
+{
+    // TODO(oral): It might be better to open file descriptors of the domain sockets before forking
+    // so Python can directly write to the file descriptor that we already opened...
+    pid_t pid;
+    int status;
+    if ((pid = fork()) < 0) {
+        err_sys("fork error");
+    } else if (pid == 0) { // child
+        chdir("/usr/local/opt/qvpn")
+        if (execl("/usr/local/opt/qvpn/run.sh", (char * )0) < 0)
+            err_sys("execl error");
+    } else { // parent
+        if ((T.qkd.fd = fopen()))
+    }
+}
+
 
 char procname[256];
 
