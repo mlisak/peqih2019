@@ -227,7 +227,7 @@ loop()
                 } while (nread > 0);
             } 
             if (FD_ISSET(T.qkd.fd)) { // TODO
-                if ((nread = read(T.qkd.fd, &T.qkd.key, KEYLEY)) < 0)
+                if ((nread = read(T.qkd.fd, &T.qkd.key, KEY_LENGTH)) < 0)
                     err_sys("Error reading new key");
                 qvpn_rekey(&T.qkd.key);
             }
@@ -236,13 +236,12 @@ loop()
 
 }
 
-int
-meet_the_forkers()
+pid_t
+init_qkd_script()
 {
     // TODO(oral): It might be better to open file descriptors of the domain sockets before forking
     // so Python can directly write to the file descriptor that we already opened...
     pid_t pid;
-    int status;
     if ((pid = fork()) < 0) {
         err_sys("fork error");
     } else if (pid == 0) { // child
@@ -250,8 +249,21 @@ meet_the_forkers()
         if (execl("/usr/local/opt/qvpn/run.sh", (char * )0) < 0)
             err_sys("execl error");
     } else { // parent
-        if ((T.qkd.fd = fopen()))
+        int qkd_sock_fd = -1;
+        for(int i = 0; i < 10; i++)
+        {
+            qkd_sock_fd = open("/tmp/qvpn.socket", O_RDWR);
+            if(qkd_sock_fd > 0)
+            {
+                T.qkd.fd = qkd_sock_fd;
+                break;
+            }
+        }
+        if(qkd_sock_fd < 0)
+            err_sys("failed to open communication socket");
     }
+
+    return pid;
 }
 
 
