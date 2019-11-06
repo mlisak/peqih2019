@@ -13,13 +13,13 @@ def main():
     else:
         assert False, "Unspecified device name %s" % device_name
 
-    conn,comm = listen()
+    comm = listen()
     if comm==b'RECV':
-        recv_conn(conn,device_name)
+        recv_conn(device_name)
     elif comm==b'SEND':
         create_conn(conn,device_name,target_name)
 
-def create_conn(conn,device_name,target_name):
+def create_conn(device_name,target_name):
     t0 = time.time()
     print('Sending RECV from %s to %s' %(device_name,target_name))
     send_rec(device_name,target_name)
@@ -53,9 +53,9 @@ def create_conn(conn,device_name,target_name):
     secs = t1-t0
     print('It took: %d mins %d seconds' % (secs // 60, secs % 60))
     print(bitstring_to_bytes(secret_key))
-    send(conn,hex(int(secret_key,2))) # Sending the result back
-def recv_conn(conn,device_name):
-    #conn.close()
+    send(bitstring_to_bytes(secret_key))
+
+def recv_conn(device_name):
     print('Starting receiving QK')
     t0 = time.time()
     # Initialize the connection
@@ -105,7 +105,8 @@ def listen(unix=True):
                 data = connection.recv(4)
                 #print('received {!r}'.format(data))
                 if data:
-                    return connection,data
+                    connection.close()
+                    return data
 
         except Exception as e:
             print(str(e))
@@ -115,7 +116,7 @@ def bitstring_to_bytes(s):
 
 def send(message):
     server_address = '/tmp/qvpm.socket'
-    if os.exists(server_address):
+    if os.path.exists(server_address):
         os.remove(server_address)
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(server_address)
