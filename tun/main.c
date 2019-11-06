@@ -63,7 +63,7 @@ struct tun_sock {
 struct qkd {
     uint8_t key[KEY_LENGTH];
     int fd;
-}
+};
 
 struct tun {
     struct tun_dev dev;
@@ -203,21 +203,21 @@ loop()
 {
     // NOTE: This should be the largest fd - the one that was opened last.
     int bfd = T.sock.fd;
-    int rsel;
+    fd_set rset;
     int ret;
     size_t nread;
     for (;;) {
         FD_ZERO(&rset);
         FD_SET(bfd, &rset);
         // TODO: Implement timeout
-        if ((FD_SET(bfd + 1, &rset, NULL, NULL, NULL, NULL > 0) {
-            if (FD_ISSET(T.dev.fd)) {
+        if (select(bfd + 1, &rset, NULL, NULL, NULL) > 0) {
+            if (FD_ISSET(T.dev.fd, &rset)) {
                 if ((nread = read(T.dev.fd, tx_buf, IP_MAXPACKET)) < 0)
                     err_sys("Error reading from tun device");
                 if (nread == 0)
                     err_quit("tun device EOF");
             }
-            if (FD_ISSET(T.sock.fd)) {
+            if (FD_ISSET(T.sock.fd, &rset)) {
                 do {
                     ret = qvpn_recv(T.sock.fd, rx_buf, &nread);
                     if (ret != 0) {
@@ -226,7 +226,7 @@ loop()
                     write(T.dev.fd, rx_buf, nread);
                 } while (nread > 0);
             } 
-            if (FD_ISSET(T.qkd.fd)) { // TODO
+            if (FD_ISSET(T.qkd.fd, &rset)) { // TODO
                 if ((nread = read(T.qkd.fd, &T.qkd.key, KEY_LENGTH)) < 0)
                     err_sys("Error reading new key");
                 qvpn_rekey(&T.qkd.key);
@@ -257,10 +257,10 @@ drop_permissions()
     if(uid != 0) // Not running as root, no need to drop permissions
         return 0;
 
-    uid_t suid_uid = (uid_t) getenv_int("SUDO_UID");
+    uid_t sudo_uid = (uid_t) getenv_int("SUDO_UID");
     gid_t sudo_gid = (gid_t) getenv_int("SUDO_GID");
 
-    if(uid_t < 0 || gid_t < 0) // Running as root, but not with sudo, PROLLY BAD
+    if(sudo_uid < 0 || sudo_gid < 0) // Running as root, but not with sudo, PROLLY BAD
         err_quit("Running as root without sudo, not cool");
 
     setuid(sudo_uid);
@@ -278,7 +278,7 @@ init_qkd_script()
         err_sys("fork error");
     } else if (pid == 0) { // child
         drop_permissions(); // TODO(mlisak): It would be better to drop permissions right after creating network device, check if we can do that
-        chdir("/usr/local/opt/qvpn")
+        chdir("/usr/local/opt/qvpn");
         if (execl("/usr/local/opt/qvpn/run.sh", (char * )0) < 0)
             err_sys("execl error");
     } else { // parent
