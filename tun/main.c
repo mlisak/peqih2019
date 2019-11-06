@@ -31,6 +31,7 @@ TODO
 #include <argp.h>               /* Argument parsing */
 
 #include "error.h"
+#include "qvpn.h"
 
 #define IFNAME_FMT "qit%d"
 #define TUN_CLONE_DEV "/dev/net/tun"
@@ -103,7 +104,7 @@ tun_sock_init (struct tun_sock *sock)
     sock->bind.sin_family = AF_INET;
     sock->bind.sin_port = htons(DEFAULT_PORT);
 
-    sock->peer.sin_family AF_INET;
+    sock->peer.sin_family = AF_INET;
     sock->peer.sin_port = htons(DEFAULT_PORT);
 
     if (T.sock.mode == MODE_SERVER) {
@@ -111,7 +112,7 @@ tun_sock_init (struct tun_sock *sock)
         if ((ssock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
             err_sys("could not create server socket");
         
-        if (bind(ssock, (struct sockaddr *) &sock->bind, sizeof(sock->bind))
+        if (bind(ssock, (struct sockaddr *) &sock->bind, sizeof(sock->bind)))
             err_sys("could not bind to TCP socket");
 
         if (listen(ssock, 1))
@@ -119,7 +120,8 @@ tun_sock_init (struct tun_sock *sock)
 
         err_msg("listening on (TCP) %s:%d", inet_ntoa(sock->bind.sin_addr), ntohs(sock->bind.sin_port));
 
-        if ((sock->fd = accept(ssock, (struct sockaddr *) &sock->peer, sizeof(sock->peer))) < 0)
+        socklen_t s;
+        if ((sock->fd = accept(ssock, (struct sockaddr *) &sock->peer, &s)) < 0)
             err_sys("server accept failed");
 
         err_msg("accepted client connection");
@@ -259,6 +261,7 @@ loop()
                     err_sys("Error reading from tun device");
                 if (nread == 0)
                     err_quit("tun device EOF");
+                qvpn_send(T.sock.fd, tx_buf, nread);
             }
             if (FD_ISSET(T.sock.fd, &rset)) {
                 do {
@@ -272,7 +275,7 @@ loop()
             if (FD_ISSET(T.qkd.fd, &rset)) { // TODO
                 if ((nread = read(T.qkd.fd, &T.qkd.key, KEY_LENGTH)) < 0)
                     err_sys("Error reading new key");
-                qvpn_rekey(&T.qkd.key);
+                qvpn_rekey(T.qkd.key);
             }
         }
     }
@@ -348,8 +351,6 @@ char procname[256];
 int
 main (int argc, char **argv)
 {
-
-    generate_network_json();
 
     sprintf(procname, "tun-test");
     err_setprogname(procname);
